@@ -1,7 +1,10 @@
+using System.Threading;
+
 namespace Chip8_Emulator;
 
 using System;
 using System.IO;
+using System.Text;
 public class Chip8
 {
     // ########### HARDWARE ############### //
@@ -13,20 +16,21 @@ public class Chip8
     private byte[] general_registers = new byte[16];
     
     // -- INDEX REGISTER: A pointer for the memory -- //
-    private ushort index_register = 0;
+    private ushort index_register;
     
     //-- PROGRAM COUNTER: A pointer for executing instructions -- //
-    private ushort program_counter = 0; 
+    private ushort program_counter; 
     
     // -- STACK: An array of return addresses when the CPU calls a subroutine -- //
     private ushort[] stack = new ushort[16];
-    private byte stack_pointer = 0;
+    private byte stack_pointer;
     
     // -- TIMERS: Delay and Sound timers -- //
-    private byte delay_timer = 0;
-    private byte sound_timer = 0;
+    private byte delay_timer;
+    private byte sound_timer;
     
     // ########### SOFTWARE ############### //
+    
     private byte[] display = new byte[64 * 32];
     
     private readonly byte[] fontSet = 
@@ -50,7 +54,8 @@ public class Chip8
     };
     
     
-    // - Takes information from memory and performs operations - //
+    
+    // - FETCH - DECODE - EXCECUTE - //
     public void EmulateCycle()
     {
         // -- FETCH -- //
@@ -140,7 +145,7 @@ public class Chip8
                             byte targetY = (byte)((coordY + row) % 32);
                             
                             // - Display is a 1D Array - //
-                            int target = (byte)((targetY * 64) + targetX);
+                            int target = ((targetY * 64) + targetX);
                             
                             // - If collision (1 XOR 1), Check the flag. Paint the pixel - //
                             if (display[target] == 1) general_registers[0xF] = 1;
@@ -149,6 +154,11 @@ public class Chip8
                     }
                 }
 
+                break;
+            default:
+                Console.WriteLine($"[SYSTEM] Unknown Opcode: {opcode:X4}");
+                // Optional: Pause so you can read the error
+                Console.ReadLine(); 
                 break;
                 
         }
@@ -160,10 +170,57 @@ public class Chip8
         using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
         {
             // -- Memory already has 512 bytes reserved for interpreter + font  (4096 - 512 = 3584)-- //
-            if (fs.Length > 3584) Console.WriteLine("[SYSTEM] ROM is too large"); return;
+            if (fs.Length > 3584) {Console.WriteLine("[SYSTEM] ROM is too large"); return;}
             // -- (Buffer, Offset in Buffer, Count) -- //
             fs.Read(memory, 512, (int)fs.Length);
         }
+    }
+    
+    // -- Updates timers -- //
+    public void UpdateTimers()
+    {
+        if (sound_timer > 0)
+        {
+            sound_timer --; 
+            Console.WriteLine("[SYSTEM] Beep!!");
+        }
+        if (delay_timer > 0) delay_timer--;
+
+    }
+    
+    // -- Draw the "Display" array to the console -- //
+    public void DrawToConsole()
+    {
+        Console.SetCursorPosition(0, 0);
+        StringBuilder console = new StringBuilder();
+        
+        for (byte row = 0; row < 32; row++)
+        {
+            for (byte column = 0; column < 64; column++)
+            {
+                if (display[row * 64 + column] == 1) console.Append("█");
+                else console.Append(" ");
+            }
+
+            console.Append('\n');
+        }
+
+        Console.Write(console.ToString());
+    }
+    
+    // -- Run Loop -- //
+    public void Run()
+    {
+        while (true)
+        {
+            for (byte i = 0; i < 8; i ++){ EmulateCycle();}
+            UpdateTimers();
+            DrawToConsole();
+            Thread.Sleep(16);
+
+        }
+
+
     }
     
     // -- CONSTRUCTOR, like a turn on button -- //
