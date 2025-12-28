@@ -30,14 +30,14 @@ public class Chip8
     private byte sound_timer;
     
     // -- KEYPAD -- //
-    private byte[] keypad = new byte[16];
+    public byte[] keypad = new byte[16];
     private int[] keyTimers = new int[16];
     
     
     // ########### SOFTWARE ############### //
     
     // -- Display "screen" -- //
-    private byte[] display = new byte[64 * 32];
+    public byte[] display = new byte[64 * 32];
     
     // -- FontSet of hexadecimal characters -- //
     private readonly byte[] fontSet = 
@@ -357,7 +357,8 @@ public class Chip8
     }
     
     // -- Draws the "Display" array to the console -- //
-    public void DrawToConsole()
+        // ---- CONSOLE VERSION ONLY ---- //
+    /*public void DrawToConsole()
     {
         Console.SetCursorPosition(0, 0);
         StringBuilder console = new StringBuilder();
@@ -374,18 +375,17 @@ public class Chip8
         }
 
         Console.Write(console.ToString());
-    }
+    }*/
     
     // -- Run Loop -- //
     public void Run()
     {
         while (true)
         {
-            ProcessInputs();
-            
+            // ProcessInputs(); -- For Console Version -- //
             for (byte i = 0; i < 8; i ++){ EmulateCycle();}
             UpdateTimers();
-            DrawToConsole();
+            // DrawToConsole(); -- For Console version -- //
             Thread.Sleep(16);
 
         }
@@ -394,7 +394,8 @@ public class Chip8
     }
     
     // -- Process Inputs -- //
-    public void ProcessInputs()
+        // ---- CONSOLE VERSION ONLY ---- //
+    /*public void ProcessInputs()
     {
         for (int i = 0; i < 16; i++)
         {
@@ -442,7 +443,7 @@ public class Chip8
                 keyTimers[chip8Key] = 5; 
             }
         }
-    }
+    } */
     
     // -- CONSTRUCTOR, like a turn on button -- //
     public Chip8()

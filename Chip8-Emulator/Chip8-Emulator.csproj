@@ -6,11 +6,15 @@
         <RootNamespace>Chip8_Emulator</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks> 
     </PropertyGroup>
     <ItemGroup>
         <None Update="ROMS\**">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="Raylib-cs" Version="7.0.2" />
     </ItemGroup>
 
 </Project>
